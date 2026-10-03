@@ -1,3 +1,4 @@
+#include "Globals.h"
 #include <fstream>
 #include <string>
 
@@ -9,12 +10,13 @@ public:
 
   void advance();
 
-  const std::string commandType();
+  ProjectEnums::Command commandType();
 
   std::string arg1();
 
   int arg2();
 
 private:
+  std::string currCommand;
   std::ifstream file;
 };
