@@ -1,0 +1,1 @@
+// Reads and parses a VM command
