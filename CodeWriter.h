@@ -9,5 +9,7 @@ public:
 
   void writePushPop(std::string command, std::string segment, int index);
 
+  void close();
+
 private:
 };
