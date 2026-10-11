@@ -3,9 +3,15 @@
 #include "Parser.h"
 #include "Globals.h"
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 
-Parser::Parser(const std::string &filename) : file(filename) {}
+Parser::Parser(const std::string &filename) : file(filename) {
+
+  if (!file.is_open()) {
+    std::cerr << "Error could not open the file!" << std::endl;
+  }
+}
 
 bool Parser::hasMoreLines() {
   std::streampos previousLinePos = file.tellg();

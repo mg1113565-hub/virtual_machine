@@ -11,5 +11,22 @@ public:
 
   void close();
 
+  // helper functions
+
+  void incrementSP();
+
+  void decrementSP();
+
+  void pushDtoStack();
+
+  void popStacktoD();
+
+  void loadSPtoA();
+
+  void loadSegment(std::string segment, int index);
+
+  void writeCompareLogic(std::string jumpCommand);
+
 private:
+  std::ofstream file;
 };
