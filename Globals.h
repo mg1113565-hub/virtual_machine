@@ -1,5 +1,4 @@
-#ifndef ENUMS_H
-#define ENUMS_H
+#pragma once
 
 namespace ProjectEnums {
 enum class Command {
@@ -14,4 +13,3 @@ enum class Command {
   C_CALL
 };
 }
-#endif ENUMS_H

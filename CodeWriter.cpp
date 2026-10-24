@@ -7,6 +7,7 @@
 CodeWriter::CodeWriter(const std::string &filename) {
 
   std::string outputFile = filename.substr(0, filename.rfind(".vm")) + ".asm";
+  fileName = filename.substr(0, filename.rfind(".vm"));
 
   file.open(outputFile);
 
@@ -73,7 +74,7 @@ void CodeWriter::writePushPop(ProjectEnums::Command commandType,
       file << "D=M\n";
     } else if (segment == "this") {
       loadSegment("THIS", index);
-      file << "D=M"
+      file << "D=M\n";
     } else if (segment == "that") {
       loadSegment("THAT", index);
       file << "D=M\n";
@@ -81,61 +82,111 @@ void CodeWriter::writePushPop(ProjectEnums::Command commandType,
       file << "@R" << std::to_string(index + 3) << '\n';
       file << "D=M\n";
     } else if (segment == "temp") {
-      file << "@R" << std::to_string(index + 3) << '\n';
+      file << "@R" << std::to_string(index + 5) << '\n';
       file << "D=M\n";
     } else if (segment == "static") {
       // TODO: name of static part is filename.index
-      file << "@" <<
+      file << "@" << fileName << "." << index << '\n';
+      file << "D=M\n";
     }
-  }
-
-  void CodeWriter::close() {}
-
-  void CodeWriter::incrementSP() {
-
-    // load mem address of SP into A register
-    // how that address is used depends on instructions after
-    file << "@SP\n";
-
-    // M register implicitly means memory at A or memory[A]
-    file << "M=M+1";
-  }
-
-  void CodeWriter::decrementSP() {
-    file << "@SP\n";
-    file << "M=M-1";
-  }
-
-  void CodeWriter::pushDtoStack() {
-    // load stack ptr to A register
-    file << "@SP\n";
-    file << "A=M\n";
-    // assign D to address of stack ptr
+    pushDtoStack();
+  } else if (commandType == ProjectEnums::Command::C_POP) {
+    file << "// pop " << segment << ' ' << index << '\n';
+    if (segment == "constant") {
+      file << "@" << index << '\n';
+    } else if (segment == "local") {
+      loadSegment("LCL", index);
+    } else if (segment == "argument") {
+      loadSegment("ARG", index);
+    } else if (segment == "this") {
+      loadSegment("THIS", index);
+    } else if (segment == "that") {
+      loadSegment("THAT", index);
+    } else if (segment == "pointer") {
+      file << "@R" << std::to_string(index + 3) << '\n';
+    } else if (segment == "temp") {
+      file << "@R" << std::to_string(index + 5) << '\n';
+    } else if (segment == "static") {
+      // TODO: name of static part is filename.index
+      file << "@" << fileName << "." << index << '\n';
+    }
+    file << "D=A\n";
+    file << "@R13\n";
     file << "M=D\n";
-    incrementSP();
-  }
-
-  void CodeWriter::popStacktoD() {
-
-    decrementSP();
-
-    // writing to memory using a ptr
-    // M is now pointing to previous stack address
-    // so address in A(@SP) is now pointing to new address M
+    popStacktoD();
+    file << "@R13\n";
     file << "A=M\n";
-
-    // store that value in D
-    file << "D=M\n";
+    file << "M=D\n";
   }
+}
 
-  void CodeWriter::loadSPtoA() {
-    file << "@SP\n";
-    file << "A=M\n";
-  }
+void CodeWriter::close() { file.close(); }
 
-  void CodeWriter::loadSegment(std::string segment, int index) {
-    file << "@" << segment << '\n';
-    file << "D=M" << '\n';
-    file << "@" << index << '\n';
-    file << "A=D+A" << '\n';
-  }
+void CodeWriter::incrementSP() {
+
+  // load mem address of SP into A register
+  // how that address is used depends on instructions after
+  file << "@SP\n";
+
+  // M register implicitly means memory at A or memory[A]
+  file << "M=M+1";
+}
+
+void CodeWriter::decrementSP() {
+  file << "@SP\n";
+  file << "M=M-1";
+}
+
+void CodeWriter::pushDtoStack() {
+  // load stack ptr to A register
+  file << "@SP\n";
+  file << "A=M\n";
+  // assign D to address of stack ptr
+  file << "M=D\n";
+  incrementSP();
+}
+
+void CodeWriter::popStacktoD() {
+
+  decrementSP();
+
+  // writing to memory using a ptr
+  // M is now pointing to previous stack address
+  // so address in A(@SP) is now pointing to new address M
+  file << "A=M\n";
+
+  // store that value in D
+  file << "D=M\n";
+}
+
+void CodeWriter::loadSPtoA() {
+  file << "@SP\n";
+  file << "A=M\n";
+}
+
+void CodeWriter::writeCompareLogic(std::string jumpCommand) {
+
+  popStacktoD();
+  decrementSP();
+  loadSPtoA();
+  file << "D=M-D\n";
+  file << "@LABEL" << labelCount << '\n';
+  file << "D" << jumpCommand << '\n';
+  loadSPtoA();
+  file << "M=0\n";
+  file << "@ENDLABEL" << labelCount << '\n';
+  file << "0;JMP\n";
+  file << "(LABEL" << labelCount << ")\n";
+  loadSPtoA();
+  file << "M=-1\n";
+  file << "(ENDLABEL" << labelCount << ")\n";
+  incrementSP();
+  labelCount++;
+}
+
+void CodeWriter::loadSegment(std::string segment, int index) {
+  file << "@" << segment << '\n';
+  file << "D=M" << '\n';
+  file << "@" << index << '\n';
+  file << "A=D+A" << '\n';
+}

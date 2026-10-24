@@ -1,3 +1,4 @@
+#include "Globals.h"
 #include <fstream>
 #include <string>
 
@@ -7,7 +8,8 @@ public:
 
   void writeArithmetic(std::string command);
 
-  void writePushPop(std::string command, std::string segment, int index);
+  void writePushPop(ProjectEnums::Command command, std::string segment,
+                    int index);
 
   void close();
 
@@ -29,4 +31,6 @@ public:
 
 private:
   std::ofstream file;
+  std::string fileName;
+  int labelCount = 0;
 };
