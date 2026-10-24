@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 Parser::Parser(const std::string &filename) : file(filename) {
 
