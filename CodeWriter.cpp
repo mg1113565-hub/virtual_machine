@@ -159,18 +159,23 @@ void CodeWriter::writePushPop(ProjectEnums::Command commandType,
       // TODO: name of static part is filename.index
       file << "@" << fileName << "." << index << '\n';
     }
-    // all ifs above just involve loading the Address's at the the respective
+    // all ifs above just involve loading the address's at the the respective
     // memory segments to the A register
 
-    // load address of A to D register
+    // load address of segment[index] to D register
     file << "D=A\n";
     // load temporary register to A register
-    // LEFT OFFF HERERERERERERERERER
     file << "@R13\n";
+    // load address of segment[index] to data of temporary register
     file << "M=D\n";
+    // pop top of the stack to D
     popStacktoD();
+    // load temporary register to A register
     file << "@R13\n";
+    // A = address of R13
+    // M = address of segment[index]
     file << "A=M\n";
+    // data at adress segment[index] = data popped from top of the stack
     file << "M=D\n";
   }
 }
@@ -182,19 +187,21 @@ void CodeWriter::incrementSP() {
   // load mem address of SP into A register
   // how that address is used depends on instructions after
   file << "@SP\n";
-
   // M register implicitly means memory at A or memory[A]
   file << "M=M+1" << '\n';
 }
 
 void CodeWriter::decrementSP() {
+  // load mem address of SP into A register
   file << "@SP\n";
+  // decrement memory at A
   file << "M=M-1" << '\n';
 }
 
 void CodeWriter::pushDtoStack() {
   // load stack ptr to A register
   file << "@SP\n";
+  // load value at SP to A register
   file << "A=M\n";
   // assign D to address of stack ptr
   file << "M=D\n";
@@ -215,20 +222,34 @@ void CodeWriter::popStacktoD() {
 }
 
 void CodeWriter::loadSPtoA() {
+  // load SP to A register
+  // stack pointer, holds the address of the top of stack in its data
+  // segment(since its a ptr)
   file << "@SP\n";
+  // load memory address of top of stack to A
   file << "A=M\n";
 }
 
 void CodeWriter::writeCompareLogic(std::string jumpCommand) {
 
+  // get value in top of stack to D
   popStacktoD();
+  // move down SP
   decrementSP();
+  // load address of top of stack to A register
   loadSPtoA();
+  // D now holds difference between the data helds in the two upper most stack
+  // values
   file << "D=M-D\n";
+  // print out label for wherever we are before jump
   file << "@LABEL" << labelCount << '\n';
+  // D jump
   file << "D" << jumpCommand << '\n';
+  // reload current top of stack to A
   loadSPtoA();
+  // set M register to 0?
   file << "M=0\n";
+
   file << "@ENDLABEL" << labelCount << '\n';
   file << "0;JMP\n";
   file << "(LABEL" << labelCount << ")\n";
@@ -240,8 +261,14 @@ void CodeWriter::writeCompareLogic(std::string jumpCommand) {
 }
 
 void CodeWriter::loadSegment(std::string segment, int index) {
+  // load memory segment pointer
   file << "@" << segment << '\n';
+  // set D register equal to memory address of the beginning of that memory
+  // segment
   file << "D=M" << '\n';
+  // load index into A register, or basically just like the offset
   file << "@" << index << '\n';
+  // add offset plus base memory to get the effective address of the segment we
+  // want, e.g. segment[index]
   file << "A=D+A" << '\n';
 }
