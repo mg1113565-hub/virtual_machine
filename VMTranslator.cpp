@@ -7,6 +7,9 @@
 
 int main(int argc, char *argv[]) {
 
+  // TODO: update to handle folder inputs as well as files
+  // TODO: update logic to loop and repeat for each file if we are passed a
+  // folder
   if (argc < 2) {
     std::cerr << "Error: No filename supplied.\n";
     return 1;

@@ -41,7 +41,8 @@ void Parser::advance() {
 
   /*
   //Remove whitespace removal for now since my curr idea for command argument
-  parsing involves the whitespace currCommand.erase(
+  parsing involves the whitespace
+  currCommand.erase(
       std::remove_if(currCommand.begin(), currCommand.end(),
                      [](unsigned char c) { return std::isspace(c); }),
       currCommand.end());
@@ -50,7 +51,7 @@ void Parser::advance() {
 
 ProjectEnums::Command Parser::commandType() {
 
-  // Not sure what to do if curr command is if-goto????
+  // TODO: Not sure what to do if curr command is if-goto????
 
   if (currCommand.contains("push")) {
     return ProjectEnums::Command::C_PUSH;

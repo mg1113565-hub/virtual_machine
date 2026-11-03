@@ -4,6 +4,9 @@
 #include "Parser.h"
 #include <iostream>
 #include <string>
+
+// TODO: write assembly instructions that affect the bootstrap code at the
+// beginning of the function
 CodeWriter::CodeWriter(const std::string &filename) {
 
   std::string outputFile = filename.substr(0, filename.rfind(".vm")) + ".asm";
@@ -15,6 +18,9 @@ CodeWriter::CodeWriter(const std::string &filename) {
     std::cerr << "Error: could not open output file" << std::endl;
   }
 }
+
+// TODO: inform of translation of new vm file(if passed a folder)
+void CodeWriter::setFileName() {}
 void CodeWriter::writeArithmetic(std::string command) {
 
   file << "// " << command << '\n';
@@ -179,6 +185,24 @@ void CodeWriter::writePushPop(ProjectEnums::Command commandType,
     file << "M=D\n";
   }
 }
+
+// TODO: write assembly code that effects label command
+void CodeWriter::writeLabel(std::string label) {}
+
+// TODO; write code that affecst goto command
+void CodeWriter::writeGoto(std::string label) {}
+
+// TODO: write code that affects IF command
+void CodeWriter::writeIf(std::string label) {}
+
+// TODO: write code that affects Function command
+void CodeWriter::writeFunction(std::string functionName, int nVars) {}
+
+// TODO: write the code that affects the call command
+void CodeWriter::writeCall(std::string functionName, int nVars) {}
+
+// TODO: write the code that affecst the return  command
+void CodeWriter::writeReturn() {}
 
 void CodeWriter::close() { file.close(); }
 
