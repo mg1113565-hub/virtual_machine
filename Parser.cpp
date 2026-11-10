@@ -49,23 +49,38 @@ void Parser::advance() {
   */
 }
 
+bool Parser::isEmpty() {
+  // reading a word out of a stringstream skips all whitespace (spaces, tabs,
+  // and the '\r' left over from windows line endings), so if we can't read a
+  // single word the line has no command on it (blank line or comment only)
+  std::stringstream ss(currCommand);
+  std::string word;
+  return !(ss >> word);
+}
+
 ProjectEnums::Command Parser::commandType() {
 
-  // TODO: Not sure what to do if curr command is if-goto????
+  // only look at the FIRST word and compare it exactly, contains() broke on
+  // "if-goto" since it contains "goto"
+  std::stringstream ss(currCommand);
+  std::string op;
+  ss >> op;
 
-  if (currCommand.contains("push")) {
+  if (op == "push") {
     return ProjectEnums::Command::C_PUSH;
-  } else if (currCommand.contains("pop")) {
+  } else if (op == "pop") {
     return ProjectEnums::Command::C_POP;
-  } else if (currCommand.contains("label")) {
+  } else if (op == "label") {
     return ProjectEnums::Command::C_LABEL;
-  } else if (currCommand.contains("goto")) {
+  } else if (op == "goto") {
     return ProjectEnums::Command::C_GOTO;
-  } else if (currCommand.contains("function")) {
+  } else if (op == "if-goto") {
+    return ProjectEnums::Command::C_IF;
+  } else if (op == "function") {
     return ProjectEnums::Command::C_FUNCTION;
-  } else if (currCommand.contains("call")) {
+  } else if (op == "call") {
     return ProjectEnums::Command::C_CALL;
-  } else if (currCommand.contains("return")) {
+  } else if (op == "return") {
     return ProjectEnums::Command::C_RETURN;
   } else {
     return ProjectEnums::Command::C_ARITHMETIC;
