@@ -202,7 +202,7 @@ void CodeWriter::writePushPop(ProjectEnums::Command commandType,
     // A = address of R13
     // M = address of segment[index]
     file << "A=M\n";
-    // data at adress segment[index] = data popped from top of the stack
+    // data at address segment[index] = data popped from top of the stack
     file << "M=D\n";
   }
 }
@@ -236,7 +236,7 @@ void CodeWriter::writeGoto(std::string label) {
 
 void CodeWriter::writeIf(std::string label) {
   file << "// if-goto " << label << '\n';
-  // pop the condition off the stack into D
+  // pop the condition value being checked off the stack into D
   popStacktoD();
   // load the label's address into A
   file << "@" << scopedLabel(label) << '\n';
@@ -254,6 +254,7 @@ void CodeWriter::writeFunction(std::string functionName, int nVars) {
   // the function's local variables live right where the stack is when it
   // starts (LCL == SP after a call), so pushing nVars zeros creates and zeroes
   // them all
+  // rerserve space for function's local variables
   for (int i = 0; i < nVars; i++) {
     file << "@0\n";
     file << "D=A\n";
@@ -269,12 +270,15 @@ void CodeWriter::pushRegister(const std::string &reg) {
   pushDtoStack();
 }
 
+// need more explanation on this function overall
 void CodeWriter::writeCall(std::string functionName, int nArgs) {
   file << "// call " << functionName << ' ' << nArgs << '\n';
 
   // unique label for where to come back to once the function returns, the
   // counter makes each call site different even if the same function is
   // called many times
+
+  // if currentFunction is empty that means this is part of the bootstrap code
   std::string caller = currentFunction.empty() ? "Bootstrap" : currentFunction;
   std::string returnLabel = caller + "$ret." + std::to_string(returnCount++);
 
@@ -317,6 +321,7 @@ void CodeWriter::writeCall(std::string functionName, int nArgs) {
   file << "(" << returnLabel << ")\n";
 }
 
+// confused by this function as well
 void CodeWriter::restoreFromFrame(const std::string &reg) {
   // R14 = endFrame address, AM=M-1 decrements R14 AND points A at the new
   // address in one instruction, so each call to this walks one step down the
@@ -330,6 +335,7 @@ void CodeWriter::restoreFromFrame(const std::string &reg) {
   file << "M=D\n";
 }
 
+// need further explanation
 void CodeWriter::writeReturn() {
   file << "// return\n";
 
@@ -451,6 +457,8 @@ void CodeWriter::writeCompareLogic(std::string jumpCommand) {
   file << "D;" << jumpCommand << '\n';
   // reload current top of stack to A
   loadSPtoA();
+
+  // what it happening in the second half of this function
   // set M register to 0?
   file << "M=0\n";
 
